@@ -56,7 +56,7 @@ A responsive web platform designed for managing personal profiles, reserving cou
 ## Contact Info
 
 
-**Client:** [Yuxin Zhang]  
-**Email:** [zyx119@uw.edu]  
-**Developer:** [Yifan Li]  
-**Email:** [yifanli8@uw.edu]  
+**Client:** Yuxin Zhang
+**Email:** zyx119@uw.edu 
+**Developer:** Yifan Li
+**Email:** yifanli8@uw.edu
