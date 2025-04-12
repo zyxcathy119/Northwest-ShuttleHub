@@ -1,19 +1,17 @@
 # Climbing Website Development
 
-**Client-Developer Meeting Notes**  
-**Date:** April 11, 2025
 
 ## Project Scope
 
-A responsive web platform designed for managing personal profiles, reserving courts, and matching players for climbing or badminton sessions. The site will allow members to easily create accounts, book times, and organize matches. Matchmaking and reservation management are central features.
+A responsive web platform designed for managing personal profiles, reserving courts, and matching players for badminton sessions. The site will allow members to easily create accounts, book times, and organize matches. Matchmaking and reservation management are central features.
 
 ---
 
 ## Target Users
 
-- **Members** of the climbing or badminton academy who want to manage their reservations and team up with others.
+- **Members** of the badminton academy who want to manage their reservations and team up with others.
 - **Coaches/Admins** who need to oversee court bookings and assess player skill levels.
-- **Teammates/Players** who want to find available match slots with others (must be registered members).
+- **Teammates/Players** who want to find available match slots with others.
 
 ---
 
