@@ -9,8 +9,7 @@ A responsive web platform designed for managing personal profiles, reserving cou
 
 ## Target Users
 
-- **Members** of the badminton academy who want to manage their reservations and team up with others.
-- **Coaches/Admins** who need to oversee court bookings and assess player skill levels.
+- **Members** of the badminton academy who want to manage their reservations.
 - **Teammates/Players** who want to find available match slots with others.
 
 ---
