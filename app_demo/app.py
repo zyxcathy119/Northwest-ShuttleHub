@@ -76,32 +76,48 @@ def track_progress():
     total = len(played)
     win_rate = round((wins / total) * 100) if total > 0 else 0
 
+    # 初始化统计容器
+    from collections import defaultdict
     monthly_played = defaultdict(int)
     monthly_wins = defaultdict(int)
 
     for b in played:
         try:
             dt = datetime.strptime(b['time'], '%Y-%m-%dT%H:%M')
-            label = dt.strftime('%b')
+            label = dt.strftime('%b')  # Jan, Feb, etc.
             monthly_played[label] += 1
             if b['result'] == 'win':
                 monthly_wins[label] += 1
         except Exception as e:
-            print("Time parse error:", b['time'], e)
+            print("Date parse error:", b['time'], e)
 
+    # 构造有序结果
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
               'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    labels, match_counts, win_counts = [], [], []
+    labels = []
+    match_counts = []
+    win_counts = []
+    win_rate_trend = []
+
     for m in months:
         if monthly_played[m] > 0:
             labels.append(m)
             match_counts.append(monthly_played[m])
             win_counts.append(monthly_wins[m])
+            ratio = round(monthly_wins[m] / monthly_played[m] * 100)
+            win_rate_trend.append(ratio)
 
     return render_template('track_progress.html',
-                           wins=wins, losses=losses, total=total, win_rate=win_rate,
-                           labels=labels, match_counts=match_counts, win_counts=win_counts)
+                           wins=wins,
+                           losses=losses,
+                           total=total,
+                           win_rate=win_rate,
+                           labels=labels,
+                           match_counts=match_counts,
+                           win_counts=win_counts,
+                           win_rate_trend=win_rate_trend)
 
+    
 if __name__ == '__main__':
     init_db()  # 初始化数据库（仅创建一次）
     app.run(debug=True)

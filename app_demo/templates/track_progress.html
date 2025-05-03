@@ -20,13 +20,22 @@
     <canvas id="progressChart" height="100"></canvas>
 
     <!-- Hidden data block -->
-    <script id="chart-data" type="application/json">
+    <!-- <script id="chart-data" type="application/json">
         {
             "labels": {{ labels|tojson }},
             "match_counts": {{ match_counts|tojson }},
             "win_counts": {{ win_counts|tojson }}
         }
+    </script> -->
+    <script id="chart-data" type="application/json">
+        {
+            "labels": {{ labels|tojson }},
+            "match_counts": {{ match_counts|tojson }},
+            "win_counts": {{ win_counts|tojson }},
+            "win_rate_trend": {{ win_rate_trend|tojson }}
+        }
     </script>
+        
 </div>
 
 <script>
@@ -42,12 +51,23 @@
                 {
                     label: 'Matches Played',
                     data: chartData.match_counts,
-                    backgroundColor: 'rgba(52, 152, 219, 0.7)'
+                    backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                    yAxisID: 'y'
                 },
                 {
                     label: 'Wins',
                     data: chartData.win_counts,
-                    backgroundColor: 'rgba(46, 204, 113, 0.7)'
+                    backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Win Rate (%)',
+                    data: chartData.win_rate_trend,
+                    type: 'line',
+                    borderColor: 'rgba(231, 76, 60, 1)',
+                    backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                    tension: 0.3,
+                    yAxisID: 'y2'
                 }
             ]
         },
@@ -65,13 +85,27 @@
             scales: {
                 y: {
                     beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Match Count'
+                    }
+                },
+                y2: {
+                    beginAtZero: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Win Rate (%)'
+                    },
+                    grid: {
+                        drawOnChartArea: false
                     }
                 }
             }
         }
     });
+
 </script>
 </body>
 </html>
