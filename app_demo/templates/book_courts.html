@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Courts</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Book a Court</h2>
+        <form method="POST">
+            <div class="mb-3">
+                <label for="court" class="form-label">Select Court</label>
+                <select id="court" name="court" class="form-select" required>
+                    <option value="">-- Select Court --</option>
+                    <option value="Court 1">Court 1</option>
+                    <option value="Court 2">Court 2</option>
+                    <option value="Court 3">Court 3</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="time" class="form-label">Time Slot</label>
+                <!-- <input type="datetime-local" name="time" class="form-control" id="time" required> -->
+                <input type="datetime-local" name="time" class="form-control" id="time" required
+                    value="{{ now|default('') }}">
+                <small class="form-text text-muted">Choose date and time</small>
+
+            </div>
+            <button type="submit" class="btn btn-primary">Book Now</button>
+        </form>
+
+        <hr>
+        <h4 class="mt-4">Your Bookings</h4>
+        <ul class="list-group">
+            {% for booking in bookings %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ booking.court }} - {{ booking.time }} - 
+                    <strong>{{ booking.result if booking.result else 'Pending' }}</strong>
+                    <div>
+                        <form method="POST" action="/set-result" class="d-inline">
+                            <!-- <input type="hidden" name="index" value="{{ loop.index0 }}"> -->
+                            <input type="hidden" name="index" value="{{ booking.id }}">
+                            <input type="hidden" name="result" value="win">
+                            <button class="btn btn-success btn-sm">Win</button>
+                        </form>
+                        <form method="POST" action="/set-result" class="d-inline">
+                            <!-- <input type="hidden" name="index" value="{{ loop.index0 }}"> -->
+                            <input type="hidden" name="index" value="{{ booking.id }}">
+                            <input type="hidden" name="result" value="loss">
+                            <button class="btn btn-danger btn-sm">Loss</button>
+                        </form>
+                    </div>
+                </li>
+            {% else %}
+                <li class="list-group-item text-muted">No bookings yet.</li>
+            {% endfor %}
+        </ul>
+        
+    </div>
+</body>
+</html>
