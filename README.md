@@ -32,9 +32,8 @@ As of May 2, 2025:
 
 | Phase                  | Duration      | Estimated Completion |
 |------------------------|---------------|-----------------------|
-| Discovery & Planning   | 1 week        | ✅ April 18, 2025      |
-| Design & Wireframing   | 2 weeks       | ✅ May 2, 2025         |
-| Development            | 3 weeks       | *In Progress*         |
+| Discovery & Planning   | 2 week        | ✅ April 25, 2025    |
+| Development & Test     | 3 weeks       | *In Progress*         |
 | Content Integration    | 1 week        | May 30, 2025          |
 | Testing & QA           | 1 week        | June 6, 2025          |
 | Launch                 | —             | June 10, 2025         |
