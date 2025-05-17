@@ -2,60 +2,231 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Book Courts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Courts - Northwest ShuttleHub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-blue: #ecf0f1;
+            --dark-blue: #2c3e50;
+            --orange: #e67e22;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-blue);
+        }
+        
+        .navbar {
+            background-color: var(--dark-blue);
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            color: white !important;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+        }
+
+        .booking-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .matched-player {
+            background-color: var(--light-blue);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .skill-badge {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2>Book a Court</h2>
-        <form method="POST">
-            <div class="mb-3">
-                <label for="court" class="form-label">Select Court</label>
-                <select id="court" name="court" class="form-select" required>
-                    <option value="">-- Select Court --</option>
-                    <option value="Court 1">Court 1</option>
-                    <option value="Court 2">Court 2</option>
-                    <option value="Court 3">Court 3</option>
-                </select>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home') }}">Northwest ShuttleHub</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('find_players') }}">Find Players</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('book_courts') }}">Book Courts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('track_progress') }}">Track Progress</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    {% if g.user %}
+                    <li class="nav-item">
+                        <span class="nav-link">Welcome, {{ g.user['username'] }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                    </li>
+                    {% endif %}
+                </ul>
             </div>
-            <div class="mb-3">
-                <label for="time" class="form-label">Time Slot</label>
-                <!-- <input type="datetime-local" name="time" class="form-control" id="time" required> -->
-                <input type="datetime-local" name="time" class="form-control" id="time" required
-                    value="{{ now|default('') }}">
-                <small class="form-text text-muted">Choose date and time</small>
+        </div>
+    </nav>
 
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="booking-container">
+                    <h2>Book a Court</h2>
+                    <form method="POST">
+                        <!-- Matched Player Info (if coming from player matching) -->
+                        <div id="matchedPlayerInfo" class="matched-player mb-4" style="display: none;">
+                            <h4>Matched Player</h4>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 id="playerName"></h5>
+                                    <span id="playerLevel" class="skill-badge"></span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearMatchedPlayer()">
+                                    Change Player
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="court" class="form-label">Select Court</label>
+                            <select id="court" name="court" class="form-select" required>
+                                <option value="">-- Select Court --</option>
+                                <option value="Court 1">Court 1</option>
+                                <option value="Court 2">Court 2</option>
+                                <option value="Court 3">Court 3</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="time" class="form-label">Select Time</label>
+                            <input type="datetime-local" id="time" name="time" class="form-control" required min="{{ now }}">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Book Court</button>
+                    </form>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary">Book Now</button>
-        </form>
 
-        <hr>
-        <h4 class="mt-4">Your Bookings</h4>
-        <ul class="list-group">
-            {% for booking in bookings %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ booking.court }} - {{ booking.time }} - 
-                    <strong>{{ booking.result if booking.result else 'Pending' }}</strong>
-                    <div>
-                        <form method="POST" action="/set-result" class="d-inline">
-                            <!-- <input type="hidden" name="index" value="{{ loop.index0 }}"> -->
-                            <input type="hidden" name="index" value="{{ booking.id }}">
-                            <input type="hidden" name="result" value="win">
-                            <button class="btn btn-success btn-sm">Win</button>
-                        </form>
-                        <form method="POST" action="/set-result" class="d-inline">
-                            <!-- <input type="hidden" name="index" value="{{ loop.index0 }}"> -->
-                            <input type="hidden" name="index" value="{{ booking.id }}">
-                            <input type="hidden" name="result" value="loss">
-                            <button class="btn btn-danger btn-sm">Loss</button>
-                        </form>
-                    </div>
-                </li>
-            {% else %}
-                <li class="list-group-item text-muted">No bookings yet.</li>
-            {% endfor %}
-        </ul>
-        
+            <div class="col-lg-4">
+                <div class="booking-container">
+                    <h3>Your Bookings</h3>
+                    <ul class="list-group">
+                        {% for booking in bookings %}
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <strong>{{ booking.court }}</strong>
+                                    <span class="text-muted">{{ booking.time }}</span>
+                                </div>
+                                {% if booking.matched_player %}
+                                <div class="matched-player-info mb-2">
+                                    <small class="text-muted">Playing with:</small>
+                                    <span class="ms-2">{{ booking.matched_player }}</span>
+                                </div>
+                                {% endif %}
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge {% if booking.result == 'win' %}bg-success{% elif booking.result == 'loss' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                        {{ booking.result if booking.result else 'Pending' }}
+                                    </span>
+                                    <div>
+                                        <form method="POST" action="/set-result" class="d-inline">
+                                            <input type="hidden" name="index" value="{{ booking.id }}">
+                                            <input type="hidden" name="result" value="win">
+                                            <button class="btn btn-success btn-sm">Win</button>
+                                        </form>
+                                        <form method="POST" action="/set-result" class="d-inline">
+                                            <input type="hidden" name="index" value="{{ booking.id }}">
+                                            <input type="hidden" name="result" value="loss">
+                                            <button class="btn btn-danger btn-sm">Loss</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </li>
+                        {% else %}
+                            <li class="list-group-item text-muted">No bookings yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Handle matched player data from find_player.html
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const playerName = urlParams.get('playerName');
+            const playerLevel = urlParams.get('playerLevel');
+            const matchTime = urlParams.get('matchTime');
+            
+            if (playerName && playerLevel) {
+                document.getElementById('matchedPlayerInfo').style.display = 'block';
+                document.getElementById('playerName').textContent = playerName;
+                document.getElementById('playerLevel').textContent = playerLevel;
+                
+                if (matchTime) {
+                    document.getElementById('time').value = matchTime;
+                }
+            }
+        });
+
+        function clearMatchedPlayer() {
+            document.getElementById('matchedPlayerInfo').style.display = 'none';
+            // Optionally clear the URL parameters
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    </script>
 </body>
 </html>
+

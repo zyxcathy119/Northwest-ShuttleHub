@@ -1,9 +1,11 @@
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, g
+from flask import Flask, render_template, request, redirect, url_for, g, jsonify, flash, session
 from datetime import datetime
 from collections import defaultdict
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key_here'  # Required for session management
 DATABASE = 'database.db'
 
 # ---------- 数据库连接 ---------- #
@@ -19,6 +21,60 @@ def close_connection(exception):
     db = getattr(g, '_database', None)
     if db:
         db.close()
+
+# ---------- 安全更新数据库 ---------- #
+def migrate_db():
+    with app.app_context():
+        db = get_db()
+        
+        # Create users table if it doesn't exist
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                level TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        ''')
+        
+        # Check if matched_player columns exist in bookings table
+        cursor = db.execute('PRAGMA table_info(bookings)')
+        columns = {row['name'] for row in cursor.fetchall()}
+        
+        # Add new columns to bookings table if they don't exist
+        if 'matched_player' not in columns:
+            db.execute('ALTER TABLE bookings ADD COLUMN matched_player TEXT')
+        if 'matched_player_level' not in columns:
+            db.execute('ALTER TABLE bookings ADD COLUMN matched_player_level TEXT')
+        if 'user_id' not in columns:
+            db.execute('ALTER TABLE bookings ADD COLUMN user_id INTEGER REFERENCES users(id)')
+        
+        # Create players table if it doesn't exist
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS players (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                level TEXT NOT NULL,
+                win_rate REAL DEFAULT 0,
+                recent_matches INTEGER DEFAULT 0
+            );
+        ''')
+        
+        # Insert sample players if none exist
+        if not db.execute('SELECT * FROM players').fetchall():
+            sample_players = [
+                ('John Smith', 'Intermediate', 65, 15),
+                ('Sarah Johnson', 'Advanced', 78, 22),
+                ('Mike Chen', 'Beginner', 45, 8),
+                ('Emma Wilson', 'Intermediate', 70, 12),
+                ('Alex Brown', 'Advanced', 82, 25)
+            ]
+            db.executemany('INSERT INTO players (name, level, win_rate, recent_matches) VALUES (?, ?, ?, ?)', 
+                          sample_players)
+        
+        db.commit()
 
 # ---------- 初始化数据库（仅运行一次）---------- #
 def init_db():
@@ -39,6 +95,11 @@ def init_db():
 def home():
     return render_template('index.html')
 
+# ---------- Find Players ---------- #
+@app.route('/find-players')
+def find_players():
+    return render_template('find_player.html')
+
 # ---------- Book Courts ---------- #
 @app.route('/book-courts', methods=['GET', 'POST'])
 def book_courts():
@@ -46,13 +107,40 @@ def book_courts():
     if request.method == 'POST':
         court = request.form['court']
         time = request.form['time']
-        db.execute('INSERT INTO bookings (court, time) VALUES (?, ?)', (court, time))
+        
+        # Validate booking time is not in the past
+        booking_time = datetime.strptime(time, '%Y-%m-%dT%H:%M')
+        if booking_time < datetime.now():
+            flash('Cannot book a time in the past')
+            return redirect(url_for('book_courts'))
+            
+        # Get matched player info from query parameters
+        matched_player = request.args.get('playerName')
+        matched_player_level = request.args.get('playerLevel')
+        
+        db.execute('''
+            INSERT INTO bookings (court, time, matched_player, matched_player_level) 
+            VALUES (?, ?, ?, ?)
+        ''', (court, time, matched_player, matched_player_level))
         db.commit()
         return redirect(url_for('book_courts'))
 
     now = datetime.now().strftime("%Y-%m-%dT%H:%M")
     bookings = db.execute('SELECT * FROM bookings ORDER BY id DESC').fetchall()
     return render_template('book_courts.html', bookings=bookings, now=now)
+
+# ---------- Get Available Players API ---------- #
+@app.route('/api/available-players')
+def get_available_players():
+    db = get_db()
+    players = db.execute('SELECT * FROM players').fetchall()
+    return jsonify([{
+        'id': p['id'],
+        'name': p['name'],
+        'level': p['level'],
+        'winRate': f"{p['win_rate']}%",
+        'recentMatches': p['recent_matches']
+    } for p in players])
 
 # ---------- 设置比赛结果 ---------- #
 @app.route('/set-result', methods=['POST'])
@@ -117,7 +205,92 @@ def track_progress():
                            win_counts=win_counts,
                            win_rate_trend=win_rate_trend)
 
+# ---------- Registration and Authentication Routes ---------- #
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        level = request.form['level']
+        
+        db = get_db()
+        error = None
+        
+        if not username:
+            error = 'Username is required.'
+        elif not email:
+            error = 'Email is required.'
+        elif not password:
+            error = 'Password is required.'
+        elif not level:
+            error = 'Playing level is required.'
+        
+        if error is None:
+            try:
+                db.execute(
+                    'INSERT INTO users (username, email, password_hash, level) VALUES (?, ?, ?, ?)',
+                    (username, email, generate_password_hash(password), level)
+                )
+                db.commit()
+                return redirect(url_for('login'))
+            except sqlite3.IntegrityError:
+                error = 'User already exists.'
+        
+        flash(error)
     
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        db = get_db()
+        error = None
+        user = db.execute(
+            'SELECT * FROM users WHERE username = ?', (username,)
+        ).fetchone()
+        
+        if user is None:
+            error = 'Incorrect username.'
+        elif not check_password_hash(user['password_hash'], password):
+            error = 'Incorrect password.'
+        
+        if error is None:
+            session.clear()
+            session['user_id'] = user['id']
+            return redirect(url_for('home'))
+        
+        flash(error)
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('home'))
+
+# Update the existing routes to use user authentication
+def login_required(view):
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for('login'))
+        return view(**kwargs)
+    return wrapped_view
+
+@app.before_request
+def load_logged_in_user():
+    user_id = session.get('user_id')
+    if user_id is None:
+        g.user = None
+    else:
+        g.user = get_db().execute(
+            'SELECT * FROM users WHERE id = ?', (user_id,)
+        ).fetchone()
+
 if __name__ == '__main__':
-    init_db()  # 初始化数据库（仅创建一次）
+    init_db()  # Initialize basic database structure
+    migrate_db()  # Safely add new tables and columns
     app.run(debug=True)

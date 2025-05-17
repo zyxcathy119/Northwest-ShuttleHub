@@ -2,111 +2,198 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Track Progress</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Progress - Northwest ShuttleHub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-blue: #ecf0f1;
+            --dark-blue: #2c3e50;
+            --orange: #e67e22;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-blue);
+        }
+        
+        .navbar {
+            background-color: var(--dark-blue);
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            color: white !important;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+        }
+
+        .list-group-item {
+            background-color: white;
+            border: none;
+            margin-bottom: 0.5rem;
+            border-radius: 5px !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
 <body>
-<div class="container mt-5">
-    <h2>Your Progress</h2>
-    <ul class="list-group mb-4">
-        <li class="list-group-item">Matches Played: {{ total }}</li>
-        <li class="list-group-item">Wins: {{ wins }}</li>
-        <li class="list-group-item">Losses: {{ losses }}</li>
-        <li class="list-group-item">Win Rate: {{ win_rate }}%</li>
-    </ul>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home') }}">Northwest ShuttleHub</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('find_players') }}">Find Players</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('book_courts') }}">Book Courts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('track_progress') }}">Track Progress</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    {% if g.user %}
+                    <li class="nav-item">
+                        <span class="nav-link">Welcome, {{ g.user['username'] }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-    <h4 class="mb-3">Performance Overview</h4>
-    <canvas id="progressChart" height="100"></canvas>
+    <div class="container mt-5">
+        <h2>Your Progress</h2>
+        <ul class="list-group mb-4">
+            <li class="list-group-item">Matches Played: {{ total }}</li>
+            <li class="list-group-item">Wins: {{ wins }}</li>
+            <li class="list-group-item">Losses: {{ losses }}</li>
+            <li class="list-group-item">Win Rate: {{ win_rate }}%</li>
+        </ul>
 
-    <!-- Hidden data block -->
-    <!-- <script id="chart-data" type="application/json">
-        {
-            "labels": {{ labels|tojson }},
-            "match_counts": {{ match_counts|tojson }},
-            "win_counts": {{ win_counts|tojson }}
-        }
-    </script> -->
-    <script id="chart-data" type="application/json">
-        {
-            "labels": {{ labels|tojson }},
-            "match_counts": {{ match_counts|tojson }},
-            "win_counts": {{ win_counts|tojson }},
-            "win_rate_trend": {{ win_rate_trend|tojson }}
-        }
-    </script>
-        
-</div>
+        <h4 class="mb-3">Performance Overview</h4>
+        <canvas id="progressChart" height="100"></canvas>
 
-<script>
-    // Parse embedded JSON data
-    const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+        <!-- Hidden data block -->
+        <!-- <script id="chart-data" type="application/json">
+            {
+                "labels": {{ labels|tojson }},
+                "match_counts": {{ match_counts|tojson }},
+                "win_counts": {{ win_counts|tojson }}
+            }
+        </script> -->
+        <script id="chart-data" type="application/json">
+            {
+                "labels": {{ labels|tojson }},
+                "match_counts": {{ match_counts|tojson }},
+                "win_counts": {{ win_counts|tojson }},
+                "win_rate_trend": {{ win_rate_trend|tojson }}
+            }
+        </script>
+    </div>
 
-    const ctx = document.getElementById('progressChart').getContext('2d');
-    const progressChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: chartData.labels,
-            datasets: [
-                {
-                    label: 'Matches Played',
-                    data: chartData.match_counts,
-                    backgroundColor: 'rgba(52, 152, 219, 0.7)',
-                    yAxisID: 'y'
-                },
-                {
-                    label: 'Wins',
-                    data: chartData.win_counts,
-                    backgroundColor: 'rgba(46, 204, 113, 0.7)',
-                    yAxisID: 'y'
-                },
-                {
-                    label: 'Win Rate (%)',
-                    data: chartData.win_rate_trend,
-                    type: 'line',
-                    borderColor: 'rgba(231, 76, 60, 1)',
-                    backgroundColor: 'rgba(231, 76, 60, 0.2)',
-                    tension: 0.3,
-                    yAxisID: 'y2'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top'
-                },
-                title: {
-                    display: true,
-                    text: 'Monthly Match Summary'
-                }
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Parse embedded JSON data
+        const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+
+        const ctx = document.getElementById('progressChart').getContext('2d');
+        const progressChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartData.labels,
+                datasets: [
+                    {
+                        label: 'Matches Played',
+                        data: chartData.match_counts,
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Wins',
+                        data: chartData.win_counts,
+                        backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Win Rate (%)',
+                        data: chartData.win_rate_trend,
+                        type: 'line',
+                        borderColor: 'rgba(231, 76, 60, 1)',
+                        backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                        tension: 0.3,
+                        yAxisID: 'y2'
+                    }
+                ]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    position: 'left',
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
                     title: {
                         display: true,
-                        text: 'Match Count'
+                        text: 'Monthly Match Summary'
                     }
                 },
-                y2: {
-                    beginAtZero: true,
-                    position: 'right',
-                    title: {
-                        display: true,
-                        text: 'Win Rate (%)'
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Match Count'
+                        }
                     },
-                    grid: {
-                        drawOnChartArea: false
+                    y2: {
+                        beginAtZero: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Win Rate (%)'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
                     }
                 }
             }
-        }
-    });
-
-</script>
+        });
+    </script>
 </body>
 </html>
 
