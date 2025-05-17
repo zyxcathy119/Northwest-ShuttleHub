@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Book Courts - Northwest Badminton Academy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Courts - Northwest ShuttleHub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -12,6 +13,7 @@
             --accent-color: #e74c3c;
             --light-blue: #ecf0f1;
             --dark-blue: #2c3e50;
+            --orange: #e67e22;
         }
         
         body {
@@ -28,6 +30,15 @@
             color: white !important;
             font-size: 1.8rem;
             font-weight: bold;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: white !important;
         }
 
         .booking-container {
@@ -67,24 +78,41 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="#">Northwest Badminton Academy</a>
+            <a class="navbar-brand" href="{{ url_for('home') }}">Northwest ShuttleHub</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/">Home</a>
+                        <a class="nav-link" href="{{ url_for('home') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/find-players">Find Players</a>
+                        <a class="nav-link" href="{{ url_for('find_players') }}">Find Players</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="/book-courts">Book Courts</a>
+                        <a class="nav-link" href="{{ url_for('book_courts') }}">Book Courts</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/track-progress">Track Progress</a>
+                        <a class="nav-link" href="{{ url_for('track_progress') }}">Track Progress</a>
                     </li>
+                </ul>
+                <ul class="navbar-nav">
+                    {% if g.user %}
+                    <li class="nav-item">
+                        <span class="nav-link">Welcome, {{ g.user['username'] }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -119,20 +147,20 @@
                                 <option value="Court 3">Court 3</option>
                             </select>
                         </div>
+
                         <div class="mb-3">
-                            <label for="time" class="form-label">Time Slot</label>
-                            <input type="datetime-local" name="time" class="form-control" id="time" required
-                                value="{{ now|default('') }}">
-                            <small class="form-text text-muted">Choose date and time</small>
+                            <label for="time" class="form-label">Select Time</label>
+                            <input type="datetime-local" id="time" name="time" class="form-control" required min="{{ now }}">
                         </div>
-                        <button type="submit" class="btn btn-primary">Book Now</button>
+
+                        <button type="submit" class="btn btn-primary">Book Court</button>
                     </form>
                 </div>
             </div>
 
             <div class="col-lg-4">
                 <div class="booking-container">
-                    <h4>Your Bookings</h4>
+                    <h3>Your Bookings</h3>
                     <ul class="list-group">
                         {% for booking in bookings %}
                             <li class="list-group-item">
@@ -201,3 +229,4 @@
     </script>
 </body>
 </html>
+

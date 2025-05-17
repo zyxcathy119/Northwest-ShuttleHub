@@ -1,9 +1,11 @@
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, g, jsonify
+from flask import Flask, render_template, request, redirect, url_for, g, jsonify, flash, session
 from datetime import datetime
 from collections import defaultdict
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key_here'  # Required for session management
 DATABASE = 'database.db'
 
 # ---------- 数据库连接 ---------- #
@@ -25,6 +27,18 @@ def migrate_db():
     with app.app_context():
         db = get_db()
         
+        # Create users table if it doesn't exist
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                level TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        ''')
+        
         # Check if matched_player columns exist in bookings table
         cursor = db.execute('PRAGMA table_info(bookings)')
         columns = {row['name'] for row in cursor.fetchall()}
@@ -34,6 +48,8 @@ def migrate_db():
             db.execute('ALTER TABLE bookings ADD COLUMN matched_player TEXT')
         if 'matched_player_level' not in columns:
             db.execute('ALTER TABLE bookings ADD COLUMN matched_player_level TEXT')
+        if 'user_id' not in columns:
+            db.execute('ALTER TABLE bookings ADD COLUMN user_id INTEGER REFERENCES users(id)')
         
         # Create players table if it doesn't exist
         db.execute('''
@@ -91,6 +107,13 @@ def book_courts():
     if request.method == 'POST':
         court = request.form['court']
         time = request.form['time']
+        
+        # Validate booking time is not in the past
+        booking_time = datetime.strptime(time, '%Y-%m-%dT%H:%M')
+        if booking_time < datetime.now():
+            flash('Cannot book a time in the past')
+            return redirect(url_for('book_courts'))
+            
         # Get matched player info from query parameters
         matched_player = request.args.get('playerName')
         matched_player_level = request.args.get('playerLevel')
@@ -182,7 +205,91 @@ def track_progress():
                            win_counts=win_counts,
                            win_rate_trend=win_rate_trend)
 
+# ---------- Registration and Authentication Routes ---------- #
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        level = request.form['level']
+        
+        db = get_db()
+        error = None
+        
+        if not username:
+            error = 'Username is required.'
+        elif not email:
+            error = 'Email is required.'
+        elif not password:
+            error = 'Password is required.'
+        elif not level:
+            error = 'Playing level is required.'
+        
+        if error is None:
+            try:
+                db.execute(
+                    'INSERT INTO users (username, email, password_hash, level) VALUES (?, ?, ?, ?)',
+                    (username, email, generate_password_hash(password), level)
+                )
+                db.commit()
+                return redirect(url_for('login'))
+            except sqlite3.IntegrityError:
+                error = 'User already exists.'
+        
+        flash(error)
     
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        db = get_db()
+        error = None
+        user = db.execute(
+            'SELECT * FROM users WHERE username = ?', (username,)
+        ).fetchone()
+        
+        if user is None:
+            error = 'Incorrect username.'
+        elif not check_password_hash(user['password_hash'], password):
+            error = 'Incorrect password.'
+        
+        if error is None:
+            session.clear()
+            session['user_id'] = user['id']
+            return redirect(url_for('home'))
+        
+        flash(error)
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('home'))
+
+# Update the existing routes to use user authentication
+def login_required(view):
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for('login'))
+        return view(**kwargs)
+    return wrapped_view
+
+@app.before_request
+def load_logged_in_user():
+    user_id = session.get('user_id')
+    if user_id is None:
+        g.user = None
+    else:
+        g.user = get_db().execute(
+            'SELECT * FROM users WHERE id = ?', (user_id,)
+        ).fetchone()
+
 if __name__ == '__main__':
     init_db()  # Initialize basic database structure
     migrate_db()  # Safely add new tables and columns
