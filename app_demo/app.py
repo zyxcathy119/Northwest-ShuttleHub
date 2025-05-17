@@ -1,5 +1,5 @@
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, g
+from flask import Flask, render_template, request, redirect, url_for, g, jsonify
 from datetime import datetime
 from collections import defaultdict
 
@@ -20,6 +20,46 @@ def close_connection(exception):
     if db:
         db.close()
 
+# ---------- 安全更新数据库 ---------- #
+def migrate_db():
+    with app.app_context():
+        db = get_db()
+        
+        # Check if matched_player columns exist in bookings table
+        cursor = db.execute('PRAGMA table_info(bookings)')
+        columns = {row['name'] for row in cursor.fetchall()}
+        
+        # Add new columns to bookings table if they don't exist
+        if 'matched_player' not in columns:
+            db.execute('ALTER TABLE bookings ADD COLUMN matched_player TEXT')
+        if 'matched_player_level' not in columns:
+            db.execute('ALTER TABLE bookings ADD COLUMN matched_player_level TEXT')
+        
+        # Create players table if it doesn't exist
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS players (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                level TEXT NOT NULL,
+                win_rate REAL DEFAULT 0,
+                recent_matches INTEGER DEFAULT 0
+            );
+        ''')
+        
+        # Insert sample players if none exist
+        if not db.execute('SELECT * FROM players').fetchall():
+            sample_players = [
+                ('John Smith', 'Intermediate', 65, 15),
+                ('Sarah Johnson', 'Advanced', 78, 22),
+                ('Mike Chen', 'Beginner', 45, 8),
+                ('Emma Wilson', 'Intermediate', 70, 12),
+                ('Alex Brown', 'Advanced', 82, 25)
+            ]
+            db.executemany('INSERT INTO players (name, level, win_rate, recent_matches) VALUES (?, ?, ?, ?)', 
+                          sample_players)
+        
+        db.commit()
+
 # ---------- 初始化数据库（仅运行一次）---------- #
 def init_db():
     with app.app_context():
@@ -39,6 +79,11 @@ def init_db():
 def home():
     return render_template('index.html')
 
+# ---------- Find Players ---------- #
+@app.route('/find-players')
+def find_players():
+    return render_template('find_player.html')
+
 # ---------- Book Courts ---------- #
 @app.route('/book-courts', methods=['GET', 'POST'])
 def book_courts():
@@ -46,13 +91,33 @@ def book_courts():
     if request.method == 'POST':
         court = request.form['court']
         time = request.form['time']
-        db.execute('INSERT INTO bookings (court, time) VALUES (?, ?)', (court, time))
+        # Get matched player info from query parameters
+        matched_player = request.args.get('playerName')
+        matched_player_level = request.args.get('playerLevel')
+        
+        db.execute('''
+            INSERT INTO bookings (court, time, matched_player, matched_player_level) 
+            VALUES (?, ?, ?, ?)
+        ''', (court, time, matched_player, matched_player_level))
         db.commit()
         return redirect(url_for('book_courts'))
 
     now = datetime.now().strftime("%Y-%m-%dT%H:%M")
     bookings = db.execute('SELECT * FROM bookings ORDER BY id DESC').fetchall()
     return render_template('book_courts.html', bookings=bookings, now=now)
+
+# ---------- Get Available Players API ---------- #
+@app.route('/api/available-players')
+def get_available_players():
+    db = get_db()
+    players = db.execute('SELECT * FROM players').fetchall()
+    return jsonify([{
+        'id': p['id'],
+        'name': p['name'],
+        'level': p['level'],
+        'winRate': f"{p['win_rate']}%",
+        'recentMatches': p['recent_matches']
+    } for p in players])
 
 # ---------- 设置比赛结果 ---------- #
 @app.route('/set-result', methods=['POST'])
@@ -119,5 +184,6 @@ def track_progress():
 
     
 if __name__ == '__main__':
-    init_db()  # 初始化数据库（仅创建一次）
+    init_db()  # Initialize basic database structure
+    migrate_db()  # Safely add new tables and columns
     app.run(debug=True)
