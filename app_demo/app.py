@@ -50,6 +50,8 @@ def migrate_db():
             db.execute('ALTER TABLE bookings ADD COLUMN matched_player_level TEXT')
         if 'user_id' not in columns:
             db.execute('ALTER TABLE bookings ADD COLUMN user_id INTEGER REFERENCES users(id)')
+        if 'scores' not in columns:
+            db.execute('ALTER TABLE bookings ADD COLUMN scores TEXT')
         
         # Create players table if it doesn't exist
         db.execute('''
@@ -164,6 +166,81 @@ def track_progress():
     total = len(played)
     win_rate = round((wins / total) * 100) if total > 0 else 0
 
+    # Calculate skill metrics based on match results and scores
+    skill_metrics = {
+        'Consistency': 0,
+        'Power': 0,
+        'Speed': 0,
+        'Technique': 0,
+        'Strategy': 0,
+        'Endurance': 0
+    }
+
+    # Analyze scores to determine skill metrics
+    for booking in played:
+        if booking['scores']:
+            scores = booking['scores'].split('<br>')
+            total_games = len(scores)
+            if total_games > 0:
+                # Consistency: Based on score differences
+                score_diffs = []
+                for score in scores:
+                    try:
+                        my_score = int(score.split('Me ')[1].split(' ')[0])
+                        opp_score = int(score.split('Opponent ')[1])
+                        score_diffs.append(abs(my_score - opp_score))
+                    except:
+                        continue
+                
+                if score_diffs:
+                    avg_diff = sum(score_diffs) / len(score_diffs)
+                    skill_metrics['Consistency'] += (1 / (1 + avg_diff)) * 20
+
+                # Power: Based on winning games with high scores
+                for score in scores:
+                    try:
+                        my_score = int(score.split('Me ')[1].split(' ')[0])
+                        if my_score >= 21:  # Won with high score
+                            skill_metrics['Power'] += 5
+                    except:
+                        continue
+
+                # Speed: Based on quick wins
+                for score in scores:
+                    try:
+                        my_score = int(score.split('Me ')[1].split(' ')[0])
+                        opp_score = int(score.split('Opponent ')[1])
+                        if my_score >= 21 and opp_score <= 15:  # Quick win
+                            skill_metrics['Speed'] += 5
+                    except:
+                        continue
+
+                # Technique: Based on close wins
+                for score in scores:
+                    try:
+                        my_score = int(score.split('Me ')[1].split(' ')[0])
+                        opp_score = int(score.split('Opponent ')[1])
+                        if abs(my_score - opp_score) <= 2:  # Close game
+                            skill_metrics['Technique'] += 5
+                    except:
+                        continue
+
+                # Strategy: Based on overall win rate
+                skill_metrics['Strategy'] += (wins / total) * 20
+
+                # Endurance: Based on number of games played and maintaining performance
+                if total_games >= 3:  # Only count matches with multiple games
+                    skill_metrics['Endurance'] += min(20, total_games * 5)  # Cap at 20 points per match
+                    # Bonus for maintaining performance in later games
+                    if total_games >= 3:
+                        last_game_score = scores[-1].split('Me ')[1].split(' ')[0]
+                        if int(last_game_score) >= 21:  # Won the last game
+                            skill_metrics['Endurance'] += 5
+
+    # Normalize all metrics to be between 0 and 100
+    for key in skill_metrics:
+        skill_metrics[key] = min(100, round(skill_metrics[key]))
+
     # 初始化统计容器
     from collections import defaultdict
     monthly_played = defaultdict(int)
@@ -203,7 +280,8 @@ def track_progress():
                            labels=labels,
                            match_counts=match_counts,
                            win_counts=win_counts,
-                           win_rate_trend=win_rate_trend)
+                           win_rate_trend=win_rate_trend,
+                           skill_metrics=skill_metrics)
 
 # ---------- Registration and Authentication Routes ---------- #
 @app.route('/register', methods=['GET', 'POST'])
@@ -289,6 +367,41 @@ def load_logged_in_user():
         g.user = get_db().execute(
             'SELECT * FROM users WHERE id = ?', (user_id,)
         ).fetchone()
+
+@app.route('/set-scores', methods=['POST'])
+def set_scores():
+    if not g.user:
+        return jsonify({'success': False, 'error': 'Not logged in'})
+    
+    booking_id = request.form.get('booking_id')
+    if not booking_id:
+        return jsonify({'success': False, 'error': 'No booking ID provided'})
+    
+    # Collect all game scores
+    scores = []
+    game_count = 1
+    while True:
+        my_score = request.form.get(f'my_score_{game_count}')
+        opponent_score = request.form.get(f'opponent_score_{game_count}')
+        
+        if not my_score or not opponent_score:
+            break
+            
+        scores.append(f"Game {game_count}: Me {my_score} Opponent {opponent_score}")
+        game_count += 1
+    
+    if not scores:
+        return jsonify({'success': False, 'error': 'No scores provided'})
+    
+    # Format scores as HTML
+    scores_html = '<br>'.join(scores)
+    
+    # Update the booking with scores
+    db = get_db()
+    db.execute('UPDATE bookings SET scores = ? WHERE id = ?', (scores_html, booking_id))
+    db.commit()
+    
+    return jsonify({'success': True})
 
 if __name__ == '__main__':
     init_db()  # Initialize basic database structure
