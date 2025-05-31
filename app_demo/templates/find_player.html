@@ -155,10 +155,29 @@
     enableTime: true,
     dateFormat: "Y-m-d H:i",
     minDate: "today",
-    minTime: new Date().toLocaleTimeString('en-US', { hour12: false }),
+    minTime: "06:00",
+    maxTime: "22:00",
+    time_24hr: true,
+    minuteIncrement: 60,
+    defaultHour: 0,
+    defaultMinute: 0,
     onChange: function(selectedDates) {
-      selectedTime = selectedDates[0];
-      document.getElementById('timeText').innerText = selectedTime.toLocaleString();
+      // Force the time to be on the hour
+      const date = selectedDates[0];
+      date.setMinutes(0);
+      date.setSeconds(0);
+      selectedTime = date;
+      
+      const formattedTime = selectedTime.toLocaleString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+      document.getElementById('timeText').innerText = formattedTime;
       loadAvailablePlayers(selectedTime);
     }
   });

@@ -1,0 +1,9 @@
+1. add a picture at the main page
+2. only alllow hour like 9:00-10:00, or 2:00-3:00, not 12:17-12:39
+3. on the "book a court" page, "your bookings" should be under the "book a court", not on its right.
+4. add profile photo on "your progress" page
+5. add score
+6. add sure button
+7. add a profile
+8. more info in profile
+9. 
