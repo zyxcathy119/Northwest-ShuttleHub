@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, g, jsonify
 from datetime import datetime
 from collections import defaultdict
 from werkzeug.security import generate_password_hash, check_password_hash
-
+import os
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Required for session management
 DATABASE = 'database.db'
@@ -406,4 +406,5 @@ def set_scores():
 if __name__ == '__main__':
     init_db()  # Initialize basic database structure
     migrate_db()  # Safely add new tables and columns
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port,debug=True)
