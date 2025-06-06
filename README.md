@@ -4,9 +4,6 @@
 
 A responsive web platform designed for managing personal profiles, reserving courts, and matching players for badminton sessions. The site will allow members to easily create profiles, book times, and organize matches. Matchmaking and reservation management are central features.
 
-## Live Demo
-https://climbtrack.onrender.com
-
 ## Target Users
 
 - **Members** of the badminton academy who want to find available match slots with others.
