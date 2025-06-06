@@ -6,72 +6,168 @@
     <title>Track Progress - Northwest ShuttleHub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --light-blue: #ecf0f1;
-            --dark-blue: #2c3e50;
-            --orange: #e67e22;
+            --primary-color: #EBD96B;
+            --secondary-color: #000000;
+            --light-bg: #FFFFFF;
+            --dark-text: #191919;
+            --gray-text: #7F7F7F;
+            --light-gray: #F4F6F5;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--light-blue);
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-text);
         }
         
         .navbar {
-            background-color: var(--dark-blue);
+            background-color: var(--secondary-color);
             padding: 1rem 0;
         }
         
         .navbar-brand {
-            color: white !important;
-            font-size: 1.8rem;
-            font-weight: bold;
+            color: var(--light-bg) !important;
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 0.03em;
         }
 
         .nav-link {
             color: rgba(255, 255, 255, 0.8) !important;
             transition: color 0.3s ease;
+            font-weight: 500;
+            font-size: 1.1rem;
+            letter-spacing: 0.01em;
         }
 
         .nav-link:hover {
-            color: white !important;
+            color: var(--primary-color) !important;
+        }
+
+        .nav-link.active {
+            color: var(--primary-color) !important;
+        }
+
+        .page-title {
+            font-weight: 900;
+            font-size: 3rem;
+            color: var(--secondary-color);
+            letter-spacing: 0.06em;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 200px;
+            height: 4px;
+            background: var(--primary-color);
+        }
+
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            background-color: var(--light-bg);
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .card h4 {
+            font-weight: 900;
+            color: var(--secondary-color);
+            letter-spacing: 0.06em;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h5 {
+            font-weight: 700;
+            color: var(--secondary-color);
+            letter-spacing: 0.02em;
         }
 
         .list-group-item {
-            background-color: white;
+            background-color: var(--light-gray);
             border: none;
             margin-bottom: 0.5rem;
-            border-radius: 5px !important;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 15px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+            color: var(--dark-text);
+        }
+
+        .profile-section {
+            background-color: var(--light-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .profile-section h4 {
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-section .text-muted {
+            color: var(--gray-text) !important;
+            font-weight: 500;
+        }
+
+        .badge {
+            background-color: var(--primary-color) !important;
+            color: var(--secondary-color) !important;
+            font-weight: 600;
+            padding: 0.5rem 0.8rem;
+            border-radius: 15px;
+        }
+
+        .alert-info {
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 15px;
+            color: var(--secondary-color);
+            padding: 1rem;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('home') }}">Northwest ShuttleHub</a>
+            <a class="navbar-brand" href="{{ url_for('home') }}">NORTHWEST SHUTTLEHUB</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('home') }}">Home</a>
+                        <a class="nav-link" href="{{ url_for('home') }}">HOME</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('find_players') }}">Find Players</a>
+                        <a class="nav-link" href="{{ url_for('about') }}">ABOUT</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('book_courts') }}">Book Courts</a>
+                        <a class="nav-link" href="{{ url_for('book_courts') }}">BOOK COURTS</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('track_progress') }}">Track Progress</a>
+                        <a class="nav-link" href="{{ url_for('rank') }}">RANK</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('track_progress') }}">TRACK PROGRESS</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">
@@ -80,14 +176,14 @@
                         <span class="nav-link">Welcome, {{ g.user['username'] }}</span>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        <a class="nav-link" href="{{ url_for('logout') }}">LOGOUT</a>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                        <a class="nav-link" href="{{ url_for('login') }}">LOGIN</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                        <a class="nav-link" href="{{ url_for('register') }}">SIGN UP</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -96,31 +192,42 @@
     </nav>
 
     <div class="container mt-5">
+        <h2 class="page-title">TRACK YOUR PROGRESS</h2>
+        
         <div class="row mb-4">
-            <div class="col-md-3 text-center">
-                <img src="{{ url_for('static', filename='profile_photo.jpg') }}" alt="Profile Photo" class="img-fluid rounded-circle mb-3" style="width: 200px; height: 200px; object-fit: cover;">
-                <h4>{{ g.user['username'] }}</h4>
-                <p class="text-muted">Level: {{ g.user['level'] }}</p>
+            <div class="col-md-3">
+                <div class="profile-section">
+                    <img src="{{ url_for('static', filename='profile_photo.jpg') }}" alt="Profile Photo" class="img-fluid rounded-circle mb-3" style="width: 200px; height: 200px; object-fit: cover;">
+                    <h4>{{ g.user['username'] }}</h4>
+                    <p class="text-muted">Level: {{ g.user['level'] }}</p>
+                </div>
             </div>
             <div class="col-md-9">
-                <h2>Your Progress</h2>
-                <ul class="list-group mb-4">
-                    <li class="list-group-item">Matches Played: {{ total }}</li>
-                    <li class="list-group-item">Wins: {{ wins }}</li>
-                    <li class="list-group-item">Losses: {{ losses }}</li>
-                    <li class="list-group-item">Win Rate: {{ win_rate }}%</li>
-                </ul>
+                <div class="card">
+                    <div class="card-body">
+                        <h4>YOUR PERFORMANCE</h4>
+                        <ul class="list-group mb-4">
+                            <li class="list-group-item">Matches Played: {{ total }}</li>
+                            <li class="list-group-item">Wins: {{ wins }}</li>
+                            <li class="list-group-item">Losses: {{ losses }}</li>
+                            <li class="list-group-item">Win Rate: {{ win_rate }}%</li>
+                        </ul>
+                    </div>
+                </div>
 
                 <div class="card mb-4">
                     <div class="card-body">
-                        <h4 class="mb-3">Performance Overview</h4>
+                        <h4 class="mb-3">PERFORMANCE OVERVIEW</h4>
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle"></i> Chart shows actual match results from your bookings over the last 12 months
+                        </div>
                         <canvas id="progressChart" height="100"></canvas>
                     </div>
                 </div>
 
                 <div class="card">
                     <div class="card-body">
-                        <h4 class="mb-3">Skill Evaluation</h4>
+                        <h4 class="mb-3">SKILL EVALUATION</h4>
                         <div class="row">
                             <div class="col-md-8">
                                 <canvas id="skillRadarChart" height="300"></canvas>
@@ -132,27 +239,27 @@
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 Consistency
-                                                <span class="badge bg-primary rounded-pill">{{ skill_metrics['Consistency'] }}%</span>
+                                                <span class="badge rounded-pill">{{ skill_metrics['Consistency'] }}%</span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 Power
-                                                <span class="badge bg-primary rounded-pill">{{ skill_metrics['Power'] }}%</span>
+                                                <span class="badge rounded-pill">{{ skill_metrics['Power'] }}%</span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 Speed
-                                                <span class="badge bg-primary rounded-pill">{{ skill_metrics['Speed'] }}%</span>
+                                                <span class="badge rounded-pill">{{ skill_metrics['Speed'] }}%</span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 Technique
-                                                <span class="badge bg-primary rounded-pill">{{ skill_metrics['Technique'] }}%</span>
+                                                <span class="badge rounded-pill">{{ skill_metrics['Technique'] }}%</span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 Strategy
-                                                <span class="badge bg-primary rounded-pill">{{ skill_metrics['Strategy'] }}%</span>
+                                                <span class="badge rounded-pill">{{ skill_metrics['Strategy'] }}%</span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 Endurance
-                                                <span class="badge bg-primary rounded-pill">{{ skill_metrics['Endurance'] }}%</span>
+                                                <span class="badge rounded-pill">{{ skill_metrics['Endurance'] }}%</span>
                                             </li>
                                         </ul>
                                     </div>
@@ -162,14 +269,6 @@
                     </div>
                 </div>
 
-                <!-- Hidden data block -->
-                <!-- <script id="chart-data" type="application/json">
-                    {
-                        "labels": {{ labels|tojson }},
-                        "match_counts": {{ match_counts|tojson }},
-                        "win_counts": {{ win_counts|tojson }}
-                    }
-                </script> -->
                 <script id="chart-data" type="application/json">
                     {
                         "labels": {{ labels|tojson }},
@@ -196,15 +295,19 @@
                 labels: chartData.labels,
                 datasets: [
                     {
-                        label: 'Matches Played',
+                        label: 'Total Matches',
                         data: chartData.match_counts,
                         backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 1,
                         yAxisID: 'y'
                     },
                     {
                         label: 'Wins',
                         data: chartData.win_counts,
                         backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                        borderColor: 'rgba(46, 204, 113, 1)',
+                        borderWidth: 1,
                         yAxisID: 'y'
                     },
                     {
@@ -214,19 +317,40 @@
                         borderColor: 'rgba(231, 76, 60, 1)',
                         backgroundColor: 'rgba(231, 76, 60, 0.2)',
                         tension: 0.3,
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
                         yAxisID: 'y2'
                     }
                 ]
             },
             options: {
                 responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
                 plugins: {
                     legend: {
                         position: 'top'
                     },
                     title: {
                         display: true,
-                        text: 'Monthly Match Summary'
+                        text: 'Monthly Performance Based on Actual Booking Results',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if (context.dataset.label === 'Win Rate (%)') {
+                                    return `Win Rate: ${context.parsed.y}%`;
+                                }
+                                return `${context.dataset.label}: ${context.parsed.y}`;
+                            }
+                        }
                     }
                 },
                 scales: {
@@ -235,11 +359,15 @@
                         position: 'left',
                         title: {
                             display: true,
-                            text: 'Match Count'
+                            text: 'Number of Matches'
+                        },
+                        ticks: {
+                            stepSize: 1
                         }
                     },
                     y2: {
                         beginAtZero: true,
+                        max: 100,
                         position: 'right',
                         title: {
                             display: true,
@@ -247,6 +375,11 @@
                         },
                         grid: {
                             drawOnChartArea: false
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
                         }
                     }
                 }

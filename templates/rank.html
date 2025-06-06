@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Rankings - Northwest ShuttleHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #EBD96B;
+            --secondary-color: #000000;
+            --light-bg: #FFFFFF;
+            --dark-text: #191919;
+            --gray-text: #7F7F7F;
+            --light-gray: #F4F6F5;
+            --gold: #f1c40f;
+            --silver: #95a5a6;
+            --bronze: #cd7f32;
+            --champion: linear-gradient(135deg, #ffd700, #ffed4e);
+            --expert: linear-gradient(135deg, #e74c3c, #c0392b);
+            --advanced: linear-gradient(135deg, #9b59b6, #8e44ad);
+            --intermediate: linear-gradient(135deg, #3498db, #2980b9);
+            --beginner: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-text);
+        }
+        
+        .navbar {
+            background-color: var(--secondary-color);
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            color: var(--light-bg) !important;
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 0.03em;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            transition: color 0.3s ease;
+            font-weight: 500;
+            font-size: 1.1rem;
+            letter-spacing: 0.01em;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+
+        .nav-link.active {
+            color: var(--primary-color) !important;
+        }
+
+        .rank-container {
+            background: var(--light-bg);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 3rem;
+        }
+
+        .rank-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .rank-title {
+            color: var(--secondary-color);
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            letter-spacing: 0.06em;
+            position: relative;
+        }
+
+        .rank-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 4px;
+            background: var(--primary-color);
+        }
+
+        .rank-subtitle {
+            color: var(--gray-text);
+            font-size: 1.5rem;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+        }
+
+        .player-rank-card {
+            background: var(--light-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .player-rank-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .player-rank-card.rank-1 {
+            border-left-color: var(--gold);
+            background: linear-gradient(135deg, #fff9e6, #ffffff);
+        }
+
+        .player-rank-card.rank-2 {
+            border-left-color: var(--silver);
+            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+        }
+
+        .player-rank-card.rank-3 {
+            border-left-color: var(--bronze);
+            background: linear-gradient(135deg, #fdf2e9, #ffffff);
+        }
+
+        .rank-number {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            margin-right: 20px;
+        }
+
+        .rank-1 .rank-number {
+            background: var(--gold);
+            color: white;
+        }
+
+        .rank-2 .rank-number {
+            background: var(--silver);
+            color: white;
+        }
+
+        .rank-3 .rank-number {
+            background: var(--bronze);
+            color: white;
+        }
+
+        .player-photo {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+        }
+
+        .player-info {
+            flex-grow: 1;
+        }
+
+        .player-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 5px;
+            letter-spacing: 0.02em;
+        }
+
+        .player-level {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .tier-champion {
+            background: var(--champion);
+            color: #8b4513;
+        }
+
+        .tier-expert {
+            background: var(--expert);
+            color: white;
+        }
+
+        .tier-advanced {
+            background: var(--advanced);
+            color: white;
+        }
+
+        .tier-intermediate {
+            background: var(--intermediate);
+            color: white;
+        }
+
+        .tier-beginner {
+            background: var(--beginner);
+            color: white;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            background: var(--light-gray);
+            padding: 1rem;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+
+        .stat-label {
+            color: var(--gray-text);
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        .page-title {
+            font-weight: 900;
+            font-size: 3rem;
+            color: var(--secondary-color);
+            letter-spacing: 0.06em;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 200px;
+            height: 4px;
+            background: var(--primary-color);
+        }
+
+        .ranking-explanation {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .ranking-explanation h5 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .ranking-explanation p {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .podium {
+            display: flex;
+            justify-content: center;
+            align-items: end;
+            gap: 20px;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        .podium-place {
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+            min-width: 150px;
+        }
+
+        .podium-first {
+            background: var(--champion);
+            color: #8b4513;
+            height: 180px;
+            order: 2;
+        }
+
+        .podium-second {
+            background: linear-gradient(135deg, #bdc3c7, #ecf0f1);
+            color: #2c3e50;
+            height: 150px;
+            order: 1;
+        }
+
+        .podium-third {
+            background: linear-gradient(135deg, #cd7f32, #e6ac7a);
+            color: white;
+            height: 120px;
+            order: 3;
+        }
+
+        .podium-rank {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .podium-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .podium-score {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home') }}">NORTHWEST SHUTTLEHUB</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home') }}">HOME</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('about') }}">ABOUT</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('book_courts') }}">BOOK COURTS</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('rank') }}">RANK</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('track_progress') }}">TRACK PROGRESS</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    {% if g.user %}
+                    <li class="nav-item">
+                        <span class="nav-link">Welcome, {{ g.user['username'] }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">LOGOUT</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">LOGIN</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}">SIGN UP</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h2 class="page-title">PLAYER RANKINGS</h2>
+        
+        <div class="rank-container">
+            <!-- Top 3 Podium -->
+            {% if ranked_players|length >= 3 %}
+            <div class="podium">
+                <div class="podium-place podium-second">
+                    <div class="podium-rank">2nd</div>
+                    <div class="podium-name">{{ ranked_players[1].player.name }}</div>
+                </div>
+                <div class="podium-place podium-first">
+                    <div class="podium-rank">🏆 1st</div>
+                    <div class="podium-name">{{ ranked_players[0].player.name }}</div>
+                </div>
+                <div class="podium-place podium-third">
+                    <div class="podium-rank">3rd</div>
+                    <div class="podium-name">{{ ranked_players[2].player.name }}</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Full Rankings List -->
+            <h3 class="mb-4"><i class="fas fa-list-ol"></i> Complete Rankings</h3>
+            {% for ranked_player in ranked_players %}
+            <div class="player-rank-card rank-{{ ranked_player.rank }}">
+                <div class="d-flex align-items-center">
+                    <div class="rank-number">
+                        {{ ranked_player.rank }}
+                        {% if ranked_player.rank <= 3 %}
+                        <i class="fas fa-trophy trophy-icon"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <img src="{{ ranked_player.player.photo_url if ranked_player.player.photo_url else 'https://ui-avatars.com/api/?name=' + ranked_player.player.name|urlencode + '&background=3498db&color=fff&size=70' }}" 
+                         alt="{{ ranked_player.player.name }}" 
+                         class="player-photo me-3"
+                         onerror="this.src='https://ui-avatars.com/api/?name={{ ranked_player.player.name|urlencode }}&background=3498db&color=fff&size=70'">
+                    
+                    <div class="player-info">
+                        <div class="player-name">{{ ranked_player.player.name }}</div>
+                        <div>
+                            <span class="player-level tier-{{ ranked_player.tier_class }}">{{ ranked_player.tier }}</span>
+                        </div>
+                        
+                        <div class="stats-row">
+                            <div class="stat-item">
+                                <span class="stat-value">{{ ranked_player.ranking_score }}</span>
+                                <span class="stat-label">Score</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">{{ ranked_player.player.total_wins }}W/{{ ranked_player.player.total_losses }}L</span>
+                                <span class="stat-label">Record</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">{{ ranked_player.player.win_rate|round(0)|int }}%</span>
+                                <span class="stat-label">Win Rate</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">{{ ranked_player.total_matches }}</span>
+                                <span class="stat-label">Total Games</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">{{ ranked_player.player.recent_matches }}</span>
+                                <span class="stat-label">Recent</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-2">
+                            {% if ranked_player.player.preferred_time %}
+                            <span class="info-badge"><i class="fas fa-clock"></i> {{ ranked_player.player.preferred_time }}</span>
+                            {% endif %}
+                            {% if ranked_player.player.location %}
+                            <span class="info-badge"><i class="fas fa-map-marker-alt"></i> {{ ranked_player.player.location }}</span>
+                            {% endif %}
+                            {% if ranked_player.player.match_frequency %}
+                            <span class="info-badge"><i class="fas fa-calendar"></i> {{ ranked_player.player.match_frequency }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
