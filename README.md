@@ -1,9 +1,5 @@
 # Northwest Shuttlehub: Member Match System for Northwest Badminton
 
-## Project Overview
-
-A comprehensive badminton club management platform that enables members to book courts, find playing partners, track their progress, and compete in a ranked system. The application features a modern, responsive design with real-time player matching and advanced booking capabilities.
-
 ## Target Users
 
 - **Badminton Club Members** who want to book courts, find opponents, and track their playing progress
