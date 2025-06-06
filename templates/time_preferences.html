@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Preferences - Northwest ShuttleHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #EBD96B;
+            --secondary-color: #000000;
+            --light-bg: #FFFFFF;
+            --dark-text: #191919;
+            --gray-text: #7F7F7F;
+            --light-gray: #F4F6F5;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+        }
+        
+        .navbar {
+            background-color: var(--secondary-color);
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            color: var(--light-bg) !important;
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 0.03em;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            transition: color 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+            letter-spacing: 0.01em;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+
+        .nav-link.active {
+            color: var(--primary-color) !important;
+        }
+        
+        .page-title {
+            font-weight: 900;
+            font-size: 3rem;
+            color: var(--secondary-color);
+            letter-spacing: 0.06em;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 200px;
+            height: 4px;
+            background: var(--primary-color);
+        }
+        
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 400;
+            font-size: 1rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(235, 217, 107, 0.25);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-text);
+            margin-bottom: 0.5rem;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            background-color: var(--primary-color);
+            border-radius: 20px 20px 0 0 !important;
+            border: none;
+            padding: 1.5rem;
+        }
+
+        .card-header h5 {
+            font-weight: 900;
+            color: var(--secondary-color);
+            margin: 0;
+            font-size: 1.5rem;
+            letter-spacing: 0.06em;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+            background-color: var(--light-bg);
+            border-radius: 0 0 20px 20px;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 1.2rem;
+            letter-spacing: -0.05em;
+            color: var(--light-bg);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--dark-text);
+            color: var(--light-bg);
+        }
+
+        .btn-secondary {
+            background-color: var(--gray-text);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 1rem;
+            letter-spacing: -0.05em;
+            color: var(--light-bg);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--dark-text);
+            color: var(--light-bg);
+        }
+
+        .btn-outline-danger {
+            border: 2px solid #dc3545;
+            color: #dc3545;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        
+        .day-section {
+            background-color: var(--light-gray);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .day-section.active {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .day-title {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--secondary-color);
+            margin: 0;
+        }
+        
+        .time-slot {
+            background-color: var(--light-bg);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        .time-slot:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .time-inputs {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .time-inputs input {
+            flex: 1;
+        }
+        
+        .alert {
+            border-radius: 15px;
+            border: none;
+            padding: 1rem 1.5rem;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .form-check-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(235, 217, 107, 0.25);
+        }
+
+        .availability-summary {
+            background-color: var(--light-gray);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .availability-summary h5 {
+            color: var(--secondary-color);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .summary-day {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .summary-day:last-child {
+            border-bottom: none;
+        }
+
+        .summary-day strong {
+            color: var(--secondary-color);
+        }
+
+        .summary-times {
+            color: var(--gray-text);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home') }}">NORTHWEST SHUTTLEHUB</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home') }}">HOME</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('about') }}">ABOUT</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('book_courts') }}">BOOK COURTS</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('rank') }}">RANK</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('track_progress') }}">TRACK PROGRESS</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('time_preferences') }}">TIME PREFERENCES</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    {% if g.user %}
+                    <li class="nav-item">
+                        <span class="nav-link">Welcome, {{ g.user['username'] }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">LOGOUT</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">LOGIN</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}">REGISTER</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {% for message in messages %}
+                        <i class="fas fa-check-circle me-2"></i>{{ message }}
+                    {% endfor %}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <div class="col-lg-8">
+                <h1 class="page-title">
+                    <i class="fas fa-clock me-3"></i>TIME PREFERENCES
+                </h1>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-calendar-week me-2"></i>Set Your Available Times</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Define when you're available to play badminton. This helps other players find you for matches and allows better scheduling.
+                        </p>
+                        
+                        <form method="POST" id="preferencesForm">
+                            {% set days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+                            {% for day in days_of_week %}
+                            <div class="day-section" id="{{ day.lower() }}Section">
+                                <div class="day-header">
+                                    <h4 class="day-title">
+                                        <i class="fas fa-calendar-day me-2"></i>{{ day }}
+                                    </h4>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" 
+                                               id="{{ day.lower() }}_enabled" 
+                                               name="{{ day.lower() }}_enabled"
+                                               onchange="toggleDay('{{ day.lower() }}')"
+                                               {% if preferences.get(day) %}checked{% endif %}>
+                                        <label class="form-check-label" for="{{ day.lower() }}_enabled">
+                                            Available
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div id="{{ day.lower() }}Times" class="time-slots" 
+                                     style="{% if not preferences.get(day) %}display: none;{% endif %}">
+                                    {% if preferences.get(day) %}
+                                        {% for pref in preferences[day] %}
+                                        <div class="time-slot">
+                                            <div class="time-inputs">
+                                                <div class="flex-fill">
+                                                    <label class="form-label">From</label>
+                                                    <input type="time" class="form-control" 
+                                                           name="{{ day.lower() }}_start_time[]" 
+                                                           value="{{ pref.start_time }}" required>
+                                                </div>
+                                                <div class="flex-fill">
+                                                    <label class="form-label">To</label>
+                                                    <input type="time" class="form-control" 
+                                                           name="{{ day.lower() }}_end_time[]" 
+                                                           value="{{ pref.end_time }}" required>
+                                                </div>
+                                                <div>
+                                                    <label class="form-label">&nbsp;</label>
+                                                    <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                            onclick="removeTimeSlot(this)">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                    <div class="time-slot">
+                                        <div class="time-inputs">
+                                            <div class="flex-fill">
+                                                <label class="form-label">From</label>
+                                                <input type="time" class="form-control" 
+                                                       name="{{ day.lower() }}_start_time[]" 
+                                                       value="09:00" required>
+                                            </div>
+                                            <div class="flex-fill">
+                                                <label class="form-label">To</label>
+                                                <input type="time" class="form-control" 
+                                                       name="{{ day.lower() }}_end_time[]" 
+                                                       value="17:00" required>
+                                            </div>
+                                            <div>
+                                                <label class="form-label">&nbsp;</label>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                        onclick="removeTimeSlot(this)">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <button type="button" class="btn btn-secondary btn-sm mt-2" 
+                                            onclick="addTimeSlot('{{ day.lower() }}')">
+                                        <i class="fas fa-plus me-2"></i>Add Time Slot
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <div class="d-flex gap-3 mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save Preferences
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="availability-summary">
+                    <h5><i class="fas fa-eye me-2"></i>Current Availability</h5>
+                    <div id="availabilitySummary">
+                        {% if preferences %}
+                            {% for day, times in preferences.items() %}
+                            <div class="summary-day">
+                                <strong>{{ day }}</strong>
+                                <div class="summary-times">
+                                    {% for time in times %}
+                                        {{ time.start_time }} - {{ time.end_time }}{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted"><i class="fas fa-calendar-times me-2"></i>No availability set yet</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-lightbulb me-2"></i>Tips</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Set realistic time slots when you're truly available
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Consider travel time to and from courts
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Update your preferences regularly
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                More availability = more match opportunities
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleDay(day) {
+            const checkbox = document.getElementById(day + '_enabled');
+            const timesSection = document.getElementById(day + 'Times');
+            const daySection = document.getElementById(day + 'Section');
+            
+            if (checkbox.checked) {
+                timesSection.style.display = 'block';
+                daySection.classList.add('active');
+            } else {
+                timesSection.style.display = 'none';
+                daySection.classList.remove('active');
+            }
+            updateSummary();
+        }
+        
+        function addTimeSlot(day) {
+            const timesContainer = document.getElementById(day + 'Times');
+            const newSlot = document.createElement('div');
+            newSlot.className = 'time-slot';
+            newSlot.innerHTML = `
+                <div class="time-inputs">
+                    <div class="flex-fill">
+                        <label class="form-label">From</label>
+                        <input type="time" class="form-control" name="${day}_start_time[]" value="09:00" required>
+                    </div>
+                    <div class="flex-fill">
+                        <label class="form-label">To</label>
+                        <input type="time" class="form-control" name="${day}_end_time[]" value="17:00" required>
+                    </div>
+                    <div>
+                        <label class="form-label">&nbsp;</label>
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeTimeSlot(this)">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Insert before the "Add Time Slot" button
+            const addButton = timesContainer.querySelector('.btn-secondary');
+            timesContainer.insertBefore(newSlot, addButton);
+            updateSummary();
+        }
+        
+        function removeTimeSlot(button) {
+            const timeSlot = button.closest('.time-slot');
+            const timesContainer = timeSlot.parentElement;
+            
+            // Don't remove if it's the only time slot
+            const timeSlots = timesContainer.querySelectorAll('.time-slot');
+            if (timeSlots.length > 1) {
+                timeSlot.remove();
+                updateSummary();
+            } else {
+                alert('You must have at least one time slot when a day is enabled.');
+            }
+        }
+        
+        function updateSummary() {
+            // This function would update the summary in real-time
+            // For now, it's just a placeholder
+        }
+        
+        // Initialize day sections on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            days.forEach(day => {
+                const checkbox = document.getElementById(day + '_enabled');
+                if (checkbox.checked) {
+                    document.getElementById(day + 'Section').classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

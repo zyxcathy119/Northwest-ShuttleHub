@@ -42,6 +42,21 @@ def migrate_db():
             );
         ''')
         
+        # Create user_preferences table if it doesn't exist
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS user_preferences (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                day_of_week TEXT NOT NULL,
+                start_time TEXT NOT NULL,
+                end_time TEXT NOT NULL,
+                is_available BOOLEAN DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id),
+                UNIQUE(user_id, day_of_week, start_time)
+            );
+        ''')
+        
         # Check if matched_player columns exist in bookings table
         cursor = db.execute('PRAGMA table_info(bookings)')
         columns = {row['name'] for row in cursor.fetchall()}
@@ -565,6 +580,72 @@ def track_progress():
                            win_counts=win_counts,
                            win_rate_trend=win_rate_trend,
                            skill_metrics=skill_metrics)
+
+# ---------- Time Preferences ---------- #
+@app.route('/time-preferences', methods=['GET', 'POST'])
+def time_preferences():
+    if not g.user:
+        return redirect(url_for('login'))
+    
+    db = get_db()
+    
+    if request.method == 'POST':
+        # Clear existing preferences for this user
+        db.execute('DELETE FROM user_preferences WHERE user_id = ?', (g.user['id'],))
+        
+        # Get form data and save new preferences
+        days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        
+        for day in days_of_week:
+            # Check if this day is enabled
+            day_enabled = request.form.get(f'{day.lower()}_enabled')
+            if day_enabled:
+                # Get time slots for this day
+                start_times = request.form.getlist(f'{day.lower()}_start_time[]')
+                end_times = request.form.getlist(f'{day.lower()}_end_time[]')
+                
+                # Save each time slot
+                for start_time, end_time in zip(start_times, end_times):
+                    if start_time and end_time:
+                        db.execute('''
+                            INSERT INTO user_preferences (user_id, day_of_week, start_time, end_time, is_available)
+                            VALUES (?, ?, ?, ?, ?)
+                        ''', (g.user['id'], day, start_time, end_time, True))
+        
+        db.commit()
+        flash('Time preferences updated successfully!')
+        return redirect(url_for('time_preferences'))
+    
+    # Get existing preferences for this user
+    preferences = db.execute('''
+        SELECT day_of_week, start_time, end_time, is_available
+        FROM user_preferences 
+        WHERE user_id = ? 
+        ORDER BY 
+            CASE day_of_week 
+                WHEN 'Monday' THEN 1 
+                WHEN 'Tuesday' THEN 2 
+                WHEN 'Wednesday' THEN 3 
+                WHEN 'Thursday' THEN 4 
+                WHEN 'Friday' THEN 5 
+                WHEN 'Saturday' THEN 6 
+                WHEN 'Sunday' THEN 7 
+            END, start_time
+    ''', (g.user['id'],)).fetchall()
+    
+    # Organize preferences by day
+    prefs_by_day = {}
+    for pref in preferences:
+        day = pref['day_of_week']
+        if day not in prefs_by_day:
+            prefs_by_day[day] = []
+        prefs_by_day[day].append({
+            'start_time': pref['start_time'],
+            'end_time': pref['end_time'],
+            'is_available': pref['is_available']
+        })
+    
+    return render_template('time_preferences.html', preferences=prefs_by_day)
 
 # ---------- Registration and Authentication Routes ---------- #
 @app.route('/register', methods=['GET', 'POST'])
