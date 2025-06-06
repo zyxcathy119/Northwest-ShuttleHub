@@ -1,6 +1,6 @@
 # Northwest Shuttlehub: Member Match System for Northwest Badminton
 
-## Web link: https://northwest-shuttlehub.onrender.com
+**Web link**: https://northwest-shuttlehub.onrender.com
 
 ## Project Scope
 
