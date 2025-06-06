@@ -834,8 +834,14 @@
                 date.setSeconds(0);
                 selectedTime = date;
                 
-                // Update the hidden input with the formatted time
-                document.getElementById('time').value = selectedTime.toISOString().slice(0, 16);
+                // Update the hidden input with the formatted time (preserve local timezone)
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const localTimeString = `${year}-${month}-${day}T${hours}:${minutes}`;
+                document.getElementById('time').value = localTimeString;
                 
                 // Load available players for this time slot
                 loadAvailablePlayers();
