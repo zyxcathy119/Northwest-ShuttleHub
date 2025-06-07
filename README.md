@@ -135,7 +135,6 @@ The application uses SQLite with the following main tables:
 | Design & Wireframing      | Week 2-3    | ✅ Completed    | May 2024      |
 | Core Development          | Week 4-6    | ✅ Completed    | May 2024      |
 | Feature Implementation    | Week 7-8    | ✅ Completed    | June 2024     |
-| UI/UX Enhancement     | Week 9  | ✅ Completed | June 2024 |
 | System Polish & Debug | Week 9  | ✅ Completed | June 2024 |
 
 ## Contact Information
